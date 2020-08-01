@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App ChatJS</title>
+
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+</head>
+<body>
+
+    <form id="chat">
+        <div id="messages_historic"></div>
+        <input type="text" name="username" id="username" placeholder="Digite seu nome"/>
+        <input type="text" name="message_text" id="message_text" placeholder="Digite sua mensagem"/>
+        <button type="submit">Enviar</button>
+
+    </form>
+
+
+
+
+    <script type='text/javascript' >
+        var socket = io('http://localhost:3333/');
+            
+            function showMessages(message) {
+                $('#messages_historic')
+                .append('<div class="message"><strong>'+ message.author +'</strong>: '+ message.message +'</div>')
+            }
+
+            socket.on('messageReceived', function(message){
+                showMessages(message);
+            })
+
+
+            socket.on('messagesPrevious', function(messages) {
+                for (message of messages) {
+                    showMessages(message);
+                }
+            })
+
+            $('#chat').submit(function (event) {
+                event.preventDefault();
+                
+                var author = $('input[name=username]').val();
+                var message = $('input[name=message_text]').val();
+                
+                if (author.length && message.length) {
+                    var messageObject = {
+                        author: author,
+                        message: message
+                    };
+                    
+                    showMessages(messageObject);
+
+                    socket.emit('sendMessage', messageObject);
+                }
+            });
+    </script>
+    
+</body>
+</html>
